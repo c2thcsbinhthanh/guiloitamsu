@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Trang Web Tùy Chỉnh Tiêu Đề</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #fce4ec;
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(233, 30, 99, 0.2);
+            max-width: 450px;
+            width: 90%;
+            transition: all 0.3s ease;
+        }
+        .cat-img {
+            width: 180px;
+            height: 180px;
+            object-fit: contain;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));
+        }
+        input[type="text"] {
+            width: 85%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #f8bbd0;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: #e91e63;
+        }
+        button {
+            padding: 12px 25px;
+            font-size: 18px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        .btn-primary {
+            background-color: #e91e63;
+            color: white;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            background-color: #d81b60;
+        }
+        .btn-yes {
+            background-color: #4caf50;
+            color: white;
+            z-index: 10;
+        }
+        .btn-yes:hover {
+            background-color: #43a047;
+        }
+        .btn-no {
+            background-color: #f44336;
+            color: white;
+            margin-left: 15px;
+            position: relative;
+        }
+        .link-box {
+            margin-top: 25px;
+            word-break: break-all;
+            background: #f8bbd0;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            text-align: left;
+            color: #880e4f;
+            border: 1px dashed #e91e63;
+        }
+        .button-group {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80px;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="app"></div>
+
+    <script>
+        // Khi chạy trên GitHub, link ảnh sẽ tải trực tiếp siêu nhanh mà không bị lỗi
+        const catImages = {
+            0: "https://media.tenor.com/X9A1E863YjAAAAAC/cute-cat.gif",       
+            1: "https://media.tenor.com/m69p2L-C2y8AAAAC/cat-sad.gif",        
+            2: "https://media.tenor.com/3O7z-OUp1-AAAAAC/sad-cat-crying.gif", 
+            3: "https://media.tenor.com/o6POn9R3G28AAAAC/crying-cat.gif",     
+            4: "https://media.tenor.com/gOq7tA_P440AAAAC/cat-crying.gif",     
+            5: "https://media.tenor.com/A__u0vE890AAAAAC/cat-crying-meme.gif",
+            6: "https://media.tenor.com/bdK8pB4k8sAAAAAC/crying-cat-meme.gif",
+            7: "https://media.tenor.com/9e1R_N4L4QAAAAAC/crying-cat.gif",     
+            happy: "https://media.tenor.com/0S0_g97t-e0AAAAC/cat-happy.gif"   
+        };
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const titleParam = urlParams.get('title');
+        const app = document.getElementById('app');
+
+        if (!titleParam) {
+            app.innerHTML = `
+                <h2>Tạo Lời Gửi Chân Thành ❤️</h2>
+                <input type="text" id="titleInput" placeholder="Nhập câu hỏi (VD: Đi chơi với tớ nhé?)">
+                <br>
+                <button class="btn-primary" onclick="generateLink()">Tạo Đường Link Mới</button>
+                <div id="result" class="link-box" style="display:none;"></div>
+            `;
+        } else {
+            let decodedTitle = decodeURIComponent(titleParam);
+            app.innerHTML = `
+                <img id="catImg" class="cat-img" src="${catImages[0]}" alt="Mèo meme đáng yêu">
+                <h2 id="questionTitle">${decodedTitle}</h2>
+                <div class="button-group">
+                    <button id="yesBtn" class="btn-yes" onclick="handleYes()">Có</button>
+                    <button id="noBtn" class="btn-no" onclick="handleNo()">Kó</button>
+                </div>
+            `;
+        }
+
+        function generateLink() {
+            const val = document.getElementById('titleInput').value.trim();
+            if (!val) {
+                alert('Bạn quên nhập tiêu đề kìa!');
+                return;
+            }
+            const currentUrl = window.location.href.split('?')[0];
+            const newLink = `${currentUrl}?title=${encodeURIComponent(val)}`;
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<strong>Link của bạn đã sẵn sàng:</strong><br><br><a href="${newLink}" target="_blank" style="color: #e91e63; font-weight: bold; text-decoration: none;">${newLink}</a>`;
+        }
+
+        let noClicks = 0;
+        function handleNo() {
+            noClicks++;
+            const yesBtn = document.getElementById('yesBtn');
+            const noBtn = document.getElementById('noBtn');
+            const catImg = document.getElementById('catImg');
+
+            if (catImages[noClicks]) {
+                catImg.src = catImages[noClicks];
+            }
+
+            if (noClicks < 7) {
+                let yesScale = 1 + (noClicks * 0.5);
+                yesBtn.style.transform = `scale(${yesScale})`;
+                
+                let noRightOffset = noClicks * 20;
+                let noScale = 1 - (noClicks * 0.1);
+                noBtn.style.transform = `translateX(${noRightOffset}px) scale(${noScale})`;
+            } else {
+                const appContainer = document.getElementById('app');
+                appContainer.style.position = 'fixed';
+                appContainer.style.top = '0';
+                appContainer.style.left = '0';
+                appContainer.style.width = '100vw';
+                appContainer.style.height = '100vh';
+                appContainer.style.maxWidth = 'none';
+                appContainer.style.borderRadius = '0';
+                appContainer.style.display = 'flex';
+                appContainer.style.flexDirection = 'column';
+                appContainer.style.justifyContent = 'center';
+                appContainer.style.alignItems = 'center';
+                appContainer.style.backgroundColor = '#fce4ec';
+
+                yesBtn.style.transform = 'scale(5)';
+                yesBtn.style.margin = '50px 0';
+                yesBtn.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
+                noBtn.style.display = 'none'; 
+            }
+        }
+
+        function handleYes() {
+            const app = document.getElementById('app');
+            app.innerHTML = `
+                <img class="cat-img" src="${catImages.happy}" alt="Mèo nhảy múa" style="width: 250px; height: 250px;">
+                <h2 style="font-size: 32px; color: #e91e63;">Yayyy! 🎉 Cảm ơn bạn nhé! ❤️</h2>
+            `;
+        }
+    </script>
+</body>
+</html>
