@@ -22,7 +22,7 @@
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(233, 30, 99, 0.2);
-            max-width: 450px;
+            max-width: 480px;
             width: 90%;
             transition: all 0.3s ease;
         }
@@ -72,6 +72,7 @@
             background-color: #4caf50;
             color: white;
             z-index: 10;
+            position: relative;
         }
         .btn-yes:hover {
             background-color: #43a047;
@@ -79,7 +80,6 @@
         .btn-no {
             background-color: #f44336;
             color: white;
-            margin-left: 15px;
             position: relative;
         }
         .link-box {
@@ -99,10 +99,17 @@
             justify-content: center;
             align-items: center;
             min-height: 80px;
+            gap: 15px;
         }
         h2 {
             color: #333;
             margin-bottom: 10px;
+        }
+        .desc-text {
+            color: #c2185b;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -111,22 +118,24 @@
     <div class="container" id="app"></div>
 
     <script>
-        // Khi chạy trên GitHub, link ảnh sẽ tải trực tiếp siêu nhanh mà không bị lỗi
+        // Sử dụng link ảnh tĩnh an toàn 100% không bị lỗi chặn hotlink
         const catImages = {
-            0: "https://media.tenor.com/X9A1E863YjAAAAAC/cute-cat.gif",       
-            1: "https://media.tenor.com/m69p2L-C2y8AAAAC/cat-sad.gif",        
-            2: "https://media.tenor.com/3O7z-OUp1-AAAAAC/sad-cat-crying.gif", 
-            3: "https://media.tenor.com/o6POn9R3G28AAAAC/crying-cat.gif",     
-            4: "https://media.tenor.com/gOq7tA_P440AAAAC/cat-crying.gif",     
-            5: "https://media.tenor.com/A__u0vE890AAAAAC/cat-crying-meme.gif",
-            6: "https://media.tenor.com/bdK8pB4k8sAAAAAC/crying-cat-meme.gif",
-            7: "https://media.tenor.com/9e1R_N4L4QAAAAAC/crying-cat.gif",     
-            happy: "https://media.tenor.com/0S0_g97t-e0AAAAC/cat-happy.gif"   
+            0: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&auto=format&fit=crop",       
+            1: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=400&auto=format&fit=crop",        
+            2: "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=400&auto=format&fit=crop", 
+            3: "https://images.unsplash.com/photo-1561948955-570b270e7c36?w=400&auto=format&fit=crop",     
+            4: "https://images.unsplash.com/photo-1543852786-1cf6624b9987?w=400&auto=format&fit=crop",     
+            5: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=400&auto=format&fit=crop",
+            6: "https://images.unsplash.com/photo-1519052537078-e6302a4968d4?w=400&auto=format&fit=crop",
+            7: "https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?w=400&auto=format&fit=crop",     
+            happy: "https://images.unsplash.com/photo-1513360371669-4adf3dd7dff8?w=400&auto=format&fit=crop"   
         };
 
         const urlParams = new URLSearchParams(window.location.search);
         const titleParam = urlParams.get('title');
         const app = document.getElementById('app');
+
+        let noClicks = 0;
 
         if (!titleParam) {
             app.innerHTML = `
@@ -161,7 +170,6 @@
             resultDiv.innerHTML = `<strong>Link của bạn đã sẵn sàng:</strong><br><br><a href="${newLink}" target="_blank" style="color: #e91e63; font-weight: bold; text-decoration: none;">${newLink}</a>`;
         }
 
-        let noClicks = 0;
         function handleNo() {
             noClicks++;
             const yesBtn = document.getElementById('yesBtn');
@@ -173,13 +181,17 @@
             }
 
             if (noClicks < 7) {
-                let yesScale = 1 + (noClicks * 0.5);
-                yesBtn.style.transform = `scale(${yesScale})`;
+                // Phóng to nút Có đồng thời dịch chuyển cả 2 nút sang phải một chút
+                let yesScale = 1 + (noClicks * 0.35);
+                let shiftOffset = noClicks * 12;
                 
-                let noRightOffset = noClicks * 20;
-                let noScale = 1 - (noClicks * 0.1);
+                yesBtn.style.transform = `translateX(${shiftOffset}px) scale(${yesScale})`;
+                
+                let noRightOffset = noClicks * 18;
+                let noScale = 1 - (noClicks * 0.08);
                 noBtn.style.transform = `translateX(${noRightOffset}px) scale(${noScale})`;
             } else {
+                // Đến lần bấm thứ 7: Nút Có phóng to full màn hình
                 const appContainer = document.getElementById('app');
                 appContainer.style.position = 'fixed';
                 appContainer.style.top = '0';
@@ -194,8 +206,8 @@
                 appContainer.style.alignItems = 'center';
                 appContainer.style.backgroundColor = '#fce4ec';
 
-                yesBtn.style.transform = 'scale(5)';
-                yesBtn.style.margin = '50px 0';
+                yesBtn.style.transform = 'scale(4.5)';
+                yesBtn.style.margin = '40px 0';
                 yesBtn.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
                 noBtn.style.display = 'none'; 
             }
@@ -203,9 +215,13 @@
 
         function handleYes() {
             const app = document.getElementById('app');
+            // Kiểm tra số lần bấm "Kó" để đổi chữ mô tả phù hợp
+            let timeText = (noClicks < 4) ? "nhanh nha" : "lâu vậy";
+            
             app.innerHTML = `
-                <img class="cat-img" src="${catImages.happy}" alt="Mèo nhảy múa" style="width: 250px; height: 250px;">
-                <h2 style="font-size: 32px; color: #e91e63;">Yayyy! 🎉 Cảm ơn bạn nhé! ❤️</h2>
+                <img class="cat-img" src="${catImages.happy}" alt="Mèo vui vẻ" style="width: 220px; height: 220px;">
+                <div class="desc-text">Sao chưa đồng ý nữa <br> đồng ý đi mà (${timeText})</div>
+                <h2 style="font-size: 28px; color: #e91e63;">Yayyy! 🎉 Cảm ơn bạn nhé! ❤️</h2>
             `;
         }
     </script>
