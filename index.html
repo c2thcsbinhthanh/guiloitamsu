@@ -3,43 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer">
-    <title>Trang Web Tùy Chỉnh Tiêu Đề</title>
+    <title>Gửi Lời Yêu Thương</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #fce4ec;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fce4ec, #f8bbd0);
             overflow: hidden;
         }
         .container {
             text-align: center;
-            background: white;
-            padding: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px 30px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(233, 30, 99, 0.2);
-            max-width: 480px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            max-width: 500px;
             width: 90%;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
         }
         .cat-img {
-            width: 180px;
-            height: 180px;
+            width: 200px;
+            height: 200px;
             object-fit: contain;
             margin-bottom: 20px;
-            transition: all 0.3s ease;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+        h2 {
+            color: #d81b60;
+            margin-bottom: 10px;
+            font-size: 24px;
+            line-height: 1.4;
+        }
+        .pleading-text {
+            color: #ff9800;
+            font-size: 16px;
+            font-style: italic;
+            margin-bottom: 20px;
+            min-height: 24px;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
         }
         input[type="text"] {
-            width: 85%;
+            width: 100%;
             padding: 15px;
-            margin-bottom: 20px;
-            border: 2px solid #f8bbd0;
-            border-radius: 12px;
+            border: 2px solid #f48fb1;
+            border-radius: 10px;
             font-size: 16px;
             outline: none;
             transition: border-color 0.3s;
@@ -48,14 +72,14 @@
             border-color: #e91e63;
         }
         button {
-            padding: 12px 25px;
+            padding: 12px 24px;
             font-size: 18px;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         button:active {
             transform: scale(0.95);
@@ -68,48 +92,45 @@
         .btn-primary:hover {
             background-color: #d81b60;
         }
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            min-height: 80px; /* Giữ không gian để nút to ra */
+        }
         .btn-yes {
             background-color: #4caf50;
             color: white;
             z-index: 10;
-            position: relative;
+            /* Thay vì dùng scale, dùng transition cho các thuộc tính kích thước */
+            transition: font-size 0.3s ease, padding 0.3s ease, background-color 0.3s ease;
         }
-        .btn-yes:hover {
-            background-color: #43a047;
-        }
+        .btn-yes:hover { background-color: #43a047; }
+        
         .btn-no {
             background-color: #f44336;
             color: white;
             position: relative;
+            transition: all 0.2s ease;
         }
         .link-box {
-            margin-top: 25px;
+            margin-top: 20px;
             word-break: break-all;
             background: #f8bbd0;
             padding: 15px;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 14px;
             text-align: left;
-            color: #880e4f;
             border: 1px dashed #e91e63;
         }
-        .button-group {
-            margin-top: 25px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 80px;
-            gap: 15px;
-        }
-        h2 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .desc-text {
-            color: #c2185b;
-            font-size: 15px;
-            font-weight: bold;
-            margin-bottom: 15px;
+        .error-text {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
         }
     </style>
 </head>
@@ -118,39 +139,56 @@
     <div class="container" id="app"></div>
 
     <script>
-        // Sử dụng link ảnh tĩnh an toàn 100% không bị lỗi chặn hotlink
+        // Sử dụng link Tenor ổn định hơn cho GitHub Pages
+        const fallbackImg = "https://placehold.co/200x200/fce4ec/e91e63?text=Meow+Meow";
+        
         const catImages = {
-            0: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&auto=format&fit=crop",       
-            1: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=400&auto=format&fit=crop",        
-            2: "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=400&auto=format&fit=crop", 
-            3: "https://images.unsplash.com/photo-1561948955-570b270e7c36?w=400&auto=format&fit=crop",     
-            4: "https://images.unsplash.com/photo-1543852786-1cf6624b9987?w=400&auto=format&fit=crop",     
-            5: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=400&auto=format&fit=crop",
-            6: "https://images.unsplash.com/photo-1519052537078-e6302a4968d4?w=400&auto=format&fit=crop",
-            7: "https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?w=400&auto=format&fit=crop",     
-            happy: "https://images.unsplash.com/photo-1513360371669-4adf3dd7dff8?w=400&auto=format&fit=crop"   
+            0: "https://media.tenor.com/7A2n2H8p8u0AAAAi/cat-peach.gif",
+            1: "https://media.tenor.com/Z4XEqWvG7sAAAAAi/cat-sad.gif",
+            2: "https://media.tenor.com/OqD0n5z354oAAAAi/crying-cat.gif",
+            3: "https://media.tenor.com/yD69v_266sYAAAAi/sad-cat.gif",
+            4: "https://media.tenor.com/xO4bHjA566gAAAAi/angry-cat.gif",
+            5: "https://media.tenor.com/9nF_Xy42h9gAAAAi/cat-knife.gif",
+            6: "https://media.tenor.com/1O6wF6K7K9EAAAAi/cat-glare.gif",
+            7: "https://media.tenor.com/5O4X4Y7a_ZcAAAAi/cat-laser.gif",
+            happy: "https://media.tenor.com/pZJ1X8_AEEQAAAAi/cat-dance.gif"
         };
+
+        const pleadingTexts = [
+            "", // Lần 0 không hiện gì
+            "Sao chưa đồng ý nữa? 😢",
+            "Đồng ý đi mà! 🥺",
+            "Năn nỉ luôn á, nhấn Có đi! 😭",
+            "Đừng nhấn Kó nữa mà! 💔",
+            "Sắp khóc rồi nha! 😠",
+            "Cố tình đúng không? Xin đó! 🙏",
+            "Hết cơ hội từ chối rồi nha! 😈" // Lần 7
+        ];
 
         const urlParams = new URLSearchParams(window.location.search);
         const titleParam = urlParams.get('title');
         const app = document.getElementById('app');
 
-        let noClicks = 0;
-
         if (!titleParam) {
+            // Chế độ 1: Tạo Link
             app.innerHTML = `
-                <h2>Tạo Lời Gửi Chân Thành ❤️</h2>
-                <input type="text" id="titleInput" placeholder="Nhập câu hỏi (VD: Đi chơi với tớ nhé?)">
-                <br>
-                <button class="btn-primary" onclick="generateLink()">Tạo Đường Link Mới</button>
+                <h2>Tạo Lời Mời Của Riêng Bạn 💌</h2>
+                <p style="color: #666; margin-bottom: 20px;">Nhập câu hỏi để gửi cho người ấy nhé!</p>
+                <div class="input-group">
+                    <input type="text" id="titleInput" placeholder="VD: Cuối tuần này đi chơi với tớ nhé?">
+                    <p id="errorMsg" class="error-text">Bạn chưa nhập nội dung kìa!</p>
+                    <button class="btn-primary" onclick="generateLink()">Tạo Đường Link 🚀</button>
+                </div>
                 <div id="result" class="link-box" style="display:none;"></div>
             `;
         } else {
+            // Chế độ 2: Hiển thị câu hỏi
             let decodedTitle = decodeURIComponent(titleParam);
             app.innerHTML = `
-                <img id="catImg" class="cat-img" src="${catImages[0]}" alt="Mèo meme đáng yêu">
+                <img id="catImg" class="cat-img" src="${catImages[0]}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo meme">
                 <h2 id="questionTitle">${decodedTitle}</h2>
-                <div class="button-group">
+                <div id="pleadingText" class="pleading-text"></div>
+                <div class="button-group" id="btnGroup">
                     <button id="yesBtn" class="btn-yes" onclick="handleYes()">Có</button>
                     <button id="noBtn" class="btn-no" onclick="handleNo()">Kó</button>
                 </div>
@@ -158,41 +196,99 @@
         }
 
         function generateLink() {
-            const val = document.getElementById('titleInput').value.trim();
+            const input = document.getElementById('titleInput');
+            const val = input.value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+            
             if (!val) {
-                alert('Bạn quên nhập tiêu đề kìa!');
+                errorMsg.style.display = 'block';
+                input.style.borderColor = 'red';
                 return;
             }
+            errorMsg.style.display = 'none';
+            input.style.borderColor = '#f48fb1';
+
             const currentUrl = window.location.href.split('?')[0];
             const newLink = `${currentUrl}?title=${encodeURIComponent(val)}`;
             const resultDiv = document.getElementById('result');
+            
             resultDiv.style.display = 'block';
-            resultDiv.innerHTML = `<strong>Link của bạn đã sẵn sàng:</strong><br><br><a href="${newLink}" target="_blank" style="color: #e91e63; font-weight: bold; text-decoration: none;">${newLink}</a>`;
+            resultDiv.innerHTML = `
+                <strong>Link của bạn đã sẵn sàng! Gửi ngay nào:</strong><br><br>
+                <a href="${newLink}" target="_blank" style="color: #d81b60; font-weight: bold;">${newLink}</a>
+                <br><br>
+                <button onclick="copyLink('${newLink}')" style="padding: 8px 15px; font-size: 14px; background: white; color: #d81b60; border: 1px solid #d81b60;">Sao chép Link</button>
+            `;
         }
+
+        function copyLink(link) {
+            const el = document.createElement('textarea');
+            el.value = link;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "Đã sao chép! ✔️";
+            btn.style.backgroundColor = "#4caf50";
+            btn.style.color = "white";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.backgroundColor = "white";
+                btn.style.color = "#d81b60";
+            }, 2000);
+        }
+
+        let noClicks = 0;
+        let yesFontSize = 18;
+        let yesPaddingV = 12;
+        let yesPaddingH = 24;
 
         function handleNo() {
             noClicks++;
             const yesBtn = document.getElementById('yesBtn');
             const noBtn = document.getElementById('noBtn');
             const catImg = document.getElementById('catImg');
+            const pleadingText = document.getElementById('pleadingText');
 
+            // Cập nhật hình ảnh mèo
             if (catImages[noClicks]) {
-                catImg.src = catImages[noClicks];
+                // Tạo hiệu ứng rung nhẹ khi đổi ảnh
+                catImg.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    catImg.src = catImages[noClicks];
+                    catImg.style.transform = 'scale(1)';
+                }, 150);
+            }
+
+            // Cập nhật lời nài nỉ
+            if (pleadingTexts[noClicks]) {
+                pleadingText.innerText = pleadingTexts[noClicks];
             }
 
             if (noClicks < 7) {
-                // Phóng to nút Có đồng thời dịch chuyển cả 2 nút sang phải một chút
-                let yesScale = 1 + (noClicks * 0.35);
-                let shiftOffset = noClicks * 12;
+                // Phóng to nút Có bằng font-size và padding (chữ không bị mờ/di chuyển sai)
+                yesFontSize += 10;
+                yesPaddingV += 5;
+                yesPaddingH += 10;
+                yesBtn.style.fontSize = `${yesFontSize}px`;
+                yesBtn.style.padding = `${yesPaddingV}px ${yesPaddingH}px`;
                 
-                yesBtn.style.transform = `translateX(${shiftOffset}px) scale(${yesScale})`;
+                // Thu nhỏ và cho nút Kó chạy lộn xộn
+                let noScale = 1 - (noClicks * 0.1);
+                let randomX = (Math.random() - 0.5) * 100; // Dịch chuyển ngẫu nhiên trục X
+                let randomY = (Math.random() - 0.5) * 50;  // Dịch chuyển ngẫu nhiên trục Y
                 
-                let noRightOffset = noClicks * 18;
-                let noScale = 1 - (noClicks * 0.08);
-                noBtn.style.transform = `translateX(${noRightOffset}px) scale(${noScale})`;
+                noBtn.style.position = 'absolute';
+                noBtn.style.transform = `translate(calc(100% + ${randomX}px), ${randomY}px) scale(${noScale})`;
+                
             } else {
-                // Đến lần bấm thứ 7: Nút Có phóng to full màn hình
+                // Cú chót: Xóa nút "Kó", phóng to toàn màn hình nút "Có"
                 const appContainer = document.getElementById('app');
+                document.body.style.background = '#4caf50'; // Đổi nền báo hiệu
+                
                 appContainer.style.position = 'fixed';
                 appContainer.style.top = '0';
                 appContainer.style.left = '0';
@@ -204,25 +300,50 @@
                 appContainer.style.flexDirection = 'column';
                 appContainer.style.justifyContent = 'center';
                 appContainer.style.alignItems = 'center';
-                appContainer.style.backgroundColor = '#fce4ec';
+                appContainer.style.background = 'rgba(255, 255, 255, 0.9)';
 
-                yesBtn.style.transform = 'scale(4.5)';
-                yesBtn.style.margin = '40px 0';
-                yesBtn.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
-                noBtn.style.display = 'none'; 
+                pleadingText.innerText = pleadingTexts[7];
+                pleadingText.style.fontSize = '24px';
+                pleadingText.style.color = 'red';
+
+                yesBtn.style.width = '90vw';
+                yesBtn.style.height = '40vh';
+                yesBtn.style.fontSize = '50px';
+                yesBtn.style.borderRadius = '30px';
+                
+                noBtn.style.display = 'none';
             }
         }
 
         function handleYes() {
             const app = document.getElementById('app');
-            // Kiểm tra số lần bấm "Kó" để đổi chữ mô tả phù hợp
-            let timeText = (noClicks < 4) ? "nhanh nha" : "lâu vậy";
+            document.body.style.background = '#ffeb3b'; // Đổi nền vui vẻ
             
+            // Logic tin nhắn dựa trên số lần bấm Kó
+            let finalMessage = "";
+            if (noClicks === 0) {
+                finalMessage = "Mình biết bạn đồng ý nhanh mà! Quá tuyệt vời! 🥰";
+            } else if (noClicks > 0 && noClicks < 4) {
+                finalMessage = "Mình biết bạn đồng ý mà, nhanh nha vậy ta! 😘";
+            } else {
+                // noClicks >= 4
+                finalMessage = "Mình biết bạn đồng ý mà, đổi từ nhanh thành lâu vậy... Làm tớ hết hồn! 😏";
+            }
+
             app.innerHTML = `
-                <img class="cat-img" src="${catImages.happy}" alt="Mèo vui vẻ" style="width: 220px; height: 220px;">
-                <div class="desc-text">Sao chưa đồng ý nữa <br> đồng ý đi mà (${timeText})</div>
-                <h2 style="font-size: 28px; color: #e91e63;">Yayyy! 🎉 Cảm ơn bạn nhé! ❤️</h2>
+                <img class="cat-img" style="width: 250px; height: 250px;" src="${catImages.happy}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo nhảy múa">
+                <h2 style="font-size: 28px; margin-top: 20px;">Yay! 🎉</h2>
+                <p style="font-size: 20px; color: #e91e63; font-weight: bold; margin-top: 15px; padding: 0 10px;">
+                    ${finalMessage} ❤️
+                </p>
             `;
+            
+            // Trả lại form ban đầu nếu đang ở chế độ toàn màn hình
+            app.style.position = 'relative';
+            app.style.width = '90%';
+            app.style.height = 'auto';
+            app.style.maxWidth = '500px';
+            app.style.borderRadius = '20px';
         }
     </script>
 </body>
