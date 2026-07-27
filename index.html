@@ -213,7 +213,7 @@
 
         if (qParam) {
             try {
-                let decodedData = JSON.parse(atob(qParam));
+                let decodedData = JSON.parse(decodeURIComponent(escape(atob(qParam))));
                 titleParam = decodedData.t || "";
                 authorParam = decodedData.a || "";
                 descParam = decodedData.d || "";
