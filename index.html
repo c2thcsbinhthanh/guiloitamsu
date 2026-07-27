@@ -108,12 +108,12 @@
             margin-bottom: 10px;
             display: block;
         }
-        .author-tag {
+        .author-text {
             font-size: 14px;
-            color: #666;
+            color: #777;
+            margin-top: -15px;
+            margin-bottom: 20px;
             font-style: italic;
-            margin-top: -5px;
-            margin-bottom: 15px;
         }
         .custom-desc {
             font-size: 16px;
@@ -266,33 +266,53 @@
             `;
         }
 
+        // HÀM RÚT GỌN LINK ĐÃ ĐƯỢC FIX LỖI BẢO MẬT CORS
         function shortenLink(longLink) {
             const shortBtn = document.getElementById('shortBtn');
             shortBtn.innerText = 'Đang rút gọn...';
             shortBtn.disabled = true;
 
-            fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(longLink)}`)
-                .then(response => response.text())
-                .then(shortUrl => {
-                    if (shortUrl && shortUrl.startsWith('http')) {
-                        document.getElementById('shortResult').style.display = 'block';
-                        document.getElementById('shortLinkText.href').href = shortUrl; // Fix assigned link
-                        const linkEl = document.getElementById('shortLinkText');
-                        linkEl.href = shortUrl;
-                        linkEl.innerText = shortUrl;
+            // Sử dụng is.gd API vì hỗ trợ CORS tốt cho GitHub Pages
+            fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longLink)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.shorturl) {
+                        showShortLink(data.shorturl);
                         shortBtn.innerText = 'Đã rút gọn ✔️';
                     } else {
-                        alert('Không thể rút gọn link lúc này!');
-                        shortBtn.innerText = '🔗 Rút gọn link';
-                        shortBtn.disabled = false;
+                        throw new Error('Lỗi từ is.gd');
                     }
                 })
                 .catch(err => {
-                    console.error(err);
-                    alert('Lỗi kết nối khi rút gọn link!');
-                    shortBtn.innerText = '🔗 Rút gọn link';
-                    shortBtn.disabled = false;
+                    console.warn("is.gd bị lỗi, thử dùng phương án dự phòng AllOrigins + TinyURL...", err);
+                    
+                    // Phương án dự phòng: Dùng proxy để vượt rào CORS cho TinyURL
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(longLink))}`;
+                    
+                    fetch(proxyUrl)
+                        .then(res => res.text())
+                        .then(shortUrl => {
+                            if (shortUrl && shortUrl.startsWith('http')) {
+                                showShortLink(shortUrl);
+                                shortBtn.innerText = 'Đã rút gọn ✔️';
+                            } else {
+                                throw new Error('Proxy cũng lỗi');
+                            }
+                        })
+                        .catch(err2 => {
+                            console.error(err2);
+                            alert('Hệ thống mạng đang chặn tạo link rút gọn! Vui lòng dùng nút "Sao chép link gốc" nhé.');
+                            shortBtn.innerText = '🔗 Rút gọn link';
+                            shortBtn.disabled = false;
+                        });
                 });
+        }
+
+        function showShortLink(shortUrl) {
+            document.getElementById('shortResult').style.display = 'block';
+            const linkEl = document.getElementById('shortLinkText');
+            linkEl.href = shortUrl;
+            linkEl.innerText = shortUrl;
         }
 
         function copyLink(link, btn) {
