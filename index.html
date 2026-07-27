@@ -5,132 +5,105 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gửi Lời Yêu Thương</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+            height: 100vh;
+            margin: 0;
+            background-color: #fce4ec;
             overflow: hidden;
         }
         .container {
             text-align: center;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 40px 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            max-width: 500px;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            max-width: 450px;
             width: 90%;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
+            transition: all 0.3s ease;
         }
         .cat-img {
-            width: 200px;
-            height: 200px;
+            width: 180px;
+            height: 180px;
             object-fit: contain;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            transition: transform 0.3s ease;
-        }
-        h2 {
-            color: #d81b60;
-            margin-bottom: 10px;
-            font-size: 24px;
-            line-height: 1.4;
-        }
-        .pleading-text {
-            color: #ff9800;
-            font-size: 16px;
-            font-style: italic;
-            margin-bottom: 20px;
-            min-height: 24px;
-            font-weight: 500;
-            transition: opacity 0.3s;
-        }
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
         }
         input[type="text"] {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #f48fb1;
-            border-radius: 10px;
+            width: 85%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
             font-size: 16px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        input[type="text"]:focus {
-            border-color: #e91e63;
         }
         button {
-            padding: 12px 24px;
-            font-size: 18px;
+            padding: 10px 20px;
+            font-size: 16px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        button:active {
-            transform: scale(0.95);
+            font-weight: bold;
         }
         .btn-primary {
             background-color: #e91e63;
             color: white;
-            width: 100%;
         }
-        .btn-primary:hover {
-            background-color: #d81b60;
+        .btn-primary.copied {
+            background-color: #4caf50;
+        }
+        .btn-yes {
+            background-color: #4caf50;
+            color: white;
+            font-size: 18px;
+            padding: 12px 28px;
+            z-index: 10;
+            transition: font-size 0.3s ease, padding 0.3s ease; 
+        }
+        .btn-no {
+            background-color: #f44336;
+            color: white;
+            font-size: 18px;
+            padding: 12px 28px;
+            margin-left: 15px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .link-box {
+            margin-top: 20px;
+            word-break: break-all;
+            background: #f1f1f1;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: left;
         }
         .button-group {
             margin-top: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 20px;
-            position: relative;
-            min-height: 80px; /* Giữ không gian để nút to ra */
-        }
-        .btn-yes {
-            background-color: #4caf50;
-            color: white;
-            z-index: 10;
-            /* Thay vì dùng scale, dùng transition cho các thuộc tính kích thước */
-            transition: font-size 0.3s ease, padding 0.3s ease, background-color 0.3s ease;
-        }
-        .btn-yes:hover { background-color: #43a047; }
-        
-        .btn-no {
-            background-color: #f44336;
-            color: white;
-            position: relative;
-            transition: all 0.2s ease;
-        }
-        .link-box {
-            margin-top: 20px;
-            word-break: break-all;
-            background: #f8bbd0;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 14px;
-            text-align: left;
-            border: 1px dashed #e91e63;
+            min-height: 80px;
         }
         .error-text {
             color: red;
             font-size: 14px;
-            margin-top: 5px;
+            margin-top: -10px;
+            margin-bottom: 15px;
             display: none;
+        }
+        #noText {
+            font-size: 15px;
+            color: #d84315;
+            font-style: italic;
+            font-weight: bold;
+            min-height: 20px;
+            margin-bottom: 10px;
+            display: block;
         }
     </style>
 </head>
@@ -139,29 +112,28 @@
     <div class="container" id="app"></div>
 
     <script>
-        const fallbackImg = "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22200%22%20height%3D%22200%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23fce4ec%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-weight%3D%22bold%22%20font-size%3D%2220%22%20fill%3D%22%23e91e63%22%3E%28%5E%E2%80%A2%E1%B4%A5%E2%80%A2%5E%29%20Meow...%3C%2Ftext%3E%3C%2Fsvg%3E";
-        
+        const fallbackImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><rect width='180' height='180' fill='%23ffb6c1'/><text x='50%' y='50%' font-family='Arial' font-size='16' fill='white' text-anchor='middle' dy='.3em'>(^•ᴥ•^) Meow</text></svg>";
+
         const catImages = {
-            0: "https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif",      /* Ảnh 1 (Ban đầu) */
-            1: "https://media.giphy.com/media/SqmkZ5IdwzTP2/giphy.gif",      /* Ảnh 2 (Bấm Kó 1 lần) */
-            2: "https://media.giphy.com/media/OPU6wzx8JrHna/giphy.gif",      /* Ảnh 3 (Bấm Kó 2 lần) */
-            3: "https://media.giphy.com/media/QhjR3MG9ZFfjB6BtIZ/giphy.gif", /* Ảnh 4 (Bấm Kó 3 lần) -> Đã sửa lại chuẩn 100% tại đây! */
-            4: "https://media.giphy.com/media/xdH0MjQ83lGFVv7gjR/giphy.gif", /* Ảnh 5 (Bấm Kó 4 lần) -> Đã trả về đúng ảnh gốc */
-            5: "https://media.giphy.com/media/K6vh53FAmgqmA/giphy.gif",      /* Ảnh 6 */
-            6: "https://media.giphy.com/media/WTjnWYENpLxS8JQ5rz/giphy.gif", /* Ảnh 7 */
-            7: "https://media.giphy.com/media/fLJ7SLBhTqatGF9hwI/giphy.gif", /* Ảnh 8 */
-            happy: "https://media.giphy.com/media/qFmdpUKAFZ6rMobzzu/giphy.gif"
+            0: "https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif",       
+            1: "https://media.giphy.com/media/SqmkZ5IdwzTP2/giphy.gif",       
+            2: "https://media.giphy.com/media/OPU6wzx8JrHna/giphy.gif",       
+            3: "https://media.giphy.com/media/xdH0MjQ83lGFVv7gjR/giphy.gif",  
+            4: "https://media.giphy.com/media/QtdE1JSEHHEOVqVcht/giphy.gif",  
+            5: "https://media.giphy.com/media/WTjnWYENpLxS8JQ5rz/giphy.gif",  
+            6: "https://media.giphy.com/media/2uwZ4xi75JhxZYeyQB/giphy.gif",  // <-- GIF kế cuối của bạn đã nằm ở đây
+            7: "https://media.giphy.com/media/fLJ7SLBhTqatGF9hwI/giphy.gif",  
+            happy: "https://media.giphy.com/media/qFmdpUKAFZ6rMobzzu/giphy.gif" 
         };
 
-        const pleadingTexts = [
-            "", // Lần 0 không hiện gì
-            "Sao chưa đồng ý nữa? 😢",
-            "Đồng ý đi mà! 🥺",
-            "Năn nỉ luôn á, nhấn Có đi! 😭",
-            "Đừng nhấn Kó nữa mà! 💔",
-            "Sắp khóc rồi nha! 😠",
-            "Cố tình đúng không? Xin đó! 🙏",
-            "Hết cơ hội từ chối rồi nha! 😈" // Lần 7
+        const noTexts = [
+            "Sao chưa đồng ý nữa?", 
+            "Đồng ý đi mà! 🥺", 
+            "Năn nỉ luôn á, nhấn Có đi! 😭", 
+            "Kó cái gì mà Kó! Nhấn Có kìa!", 
+            "Cho cơ hội nữa đó, nhấn Có đi!", 
+            "Không thoát được đâu! 😈", 
+            "Hết cách rồi, chỉ có 1 nút thôi! 😂" 
         ];
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -169,25 +141,21 @@
         const app = document.getElementById('app');
 
         if (!titleParam) {
-            // Chế độ 1: Tạo Link
             app.innerHTML = `
-                <h2>Tạo Lời Mời Của Riêng Bạn 💌</h2>
-                <p style="color: #666; margin-bottom: 20px;">Nhập câu hỏi để gửi cho người ấy nhé!</p>
-                <div class="input-group">
-                    <input type="text" id="titleInput" placeholder="VD: Cuối tuần này đi chơi với tớ nhé?">
-                    <p id="errorMsg" class="error-text">Bạn chưa nhập nội dung kìa!</p>
-                    <button class="btn-primary" onclick="generateLink()">Tạo Đường Link 🚀</button>
-                </div>
+                <h2>Tạo Lời Mời Của Bạn</h2>
+                <input type="text" id="titleInput" placeholder="Nhập câu hỏi (VD: Đi chơi với tớ nhé?)">
+                <div id="errorText" class="error-text">Vui lòng nhập nội dung!</div>
+                <button id="genBtn" class="btn-primary" onclick="generateLink()">Tạo Đường Link</button>
                 <div id="result" class="link-box" style="display:none;"></div>
             `;
-        } else {
-            // Chế độ 2: Hiển thị câu hỏi
+        } 
+        else {
             let decodedTitle = decodeURIComponent(titleParam);
             app.innerHTML = `
                 <img id="catImg" class="cat-img" src="${catImages[0]}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo meme">
                 <h2 id="questionTitle">${decodedTitle}</h2>
-                <div id="pleadingText" class="pleading-text"></div>
-                <div class="button-group" id="btnGroup">
+                <div id="noText"></div>
+                <div class="button-group">
                     <button id="yesBtn" class="btn-yes" onclick="handleYes()">Có</button>
                     <button id="noBtn" class="btn-no" onclick="handleNo()">Kó</button>
                 </div>
@@ -195,99 +163,66 @@
         }
 
         function generateLink() {
-            const input = document.getElementById('titleInput');
-            const val = input.value.trim();
-            const errorMsg = document.getElementById('errorMsg');
+            const val = document.getElementById('titleInput').value.trim();
+            const errorText = document.getElementById('errorText');
             
             if (!val) {
-                errorMsg.style.display = 'block';
-                input.style.borderColor = 'red';
+                errorText.style.display = 'block';
                 return;
             }
-            errorMsg.style.display = 'none';
-            input.style.borderColor = '#f48fb1';
-
+            errorText.style.display = 'none';
+            
             const currentUrl = window.location.href.split('?')[0];
             const newLink = `${currentUrl}?title=${encodeURIComponent(val)}`;
             const resultDiv = document.getElementById('result');
             
             resultDiv.style.display = 'block';
             resultDiv.innerHTML = `
-                <strong>Link của bạn đã sẵn sàng! Gửi ngay nào:</strong><br><br>
-                <a href="${newLink}" target="_blank" style="color: #d81b60; font-weight: bold;">${newLink}</a>
-                <br><br>
-                <button onclick="copyLink('${newLink}')" style="padding: 8px 15px; font-size: 14px; background: white; color: #d81b60; border: 1px solid #d81b60;">Sao chép Link</button>
+                <strong>Link của bạn đây:</strong><br>
+                <a href="${newLink}" target="_blank">${newLink}</a><br><br>
+                <button onclick="copyLink('${newLink}')" class="btn-primary" style="font-size: 14px; padding: 8px 15px;">Sao chép link</button>
             `;
         }
 
         function copyLink(link) {
-            const el = document.createElement('textarea');
-            el.value = link;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            
-            const btn = event.target;
-            const originalText = btn.innerText;
-            btn.innerText = "Đã sao chép! ✔️";
-            btn.style.backgroundColor = "#4caf50";
-            btn.style.color = "white";
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.backgroundColor = "white";
-                btn.style.color = "#d81b60";
-            }, 2000);
+            navigator.clipboard.writeText(link).then(() => {
+                const btn = document.querySelector('.link-box button');
+                btn.innerText = 'Đã sao chép! ✔️';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerText = 'Sao chép link';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
         }
 
         let noClicks = 0;
-        let yesFontSize = 18;
-        let yesPaddingV = 12;
-        let yesPaddingH = 24;
-
         function handleNo() {
             noClicks++;
             const yesBtn = document.getElementById('yesBtn');
             const noBtn = document.getElementById('noBtn');
             const catImg = document.getElementById('catImg');
-            const pleadingText = document.getElementById('pleadingText');
+            const noText = document.getElementById('noText');
 
-            // Cập nhật hình ảnh mèo
             if (catImages[noClicks]) {
-                // Tạo hiệu ứng rung nhẹ khi đổi ảnh
-                catImg.style.transform = 'scale(0.9)';
-                setTimeout(() => {
-                    catImg.src = catImages[noClicks];
-                    catImg.style.transform = 'scale(1)';
-                }, 150);
+                catImg.src = catImages[noClicks];
             }
 
-            // Cập nhật lời nài nỉ
-            if (pleadingTexts[noClicks]) {
-                pleadingText.innerText = pleadingTexts[noClicks];
+            if (noClicks <= 7) {
+                noText.innerText = noTexts[noClicks - 1];
             }
 
             if (noClicks < 7) {
-                // Phóng to nút Có bằng font-size và padding (chữ không bị mờ/di chuyển sai)
-                yesFontSize += 10;
-                yesPaddingV += 5;
-                yesPaddingH += 10;
-                yesBtn.style.fontSize = `${yesFontSize}px`;
-                yesBtn.style.padding = `${yesPaddingV}px ${yesPaddingH}px`;
+                let newFontSize = 18 + (noClicks * 8); 
+                let newPadding = 12 + (noClicks * 6);
+                yesBtn.style.fontSize = `${newFontSize}px`;
+                yesBtn.style.padding = `${newPadding}px ${newPadding * 2}px`;
                 
-                // Thu nhỏ và cho nút Kó chạy lộn xộn
-                let noScale = 1 - (noClicks * 0.1);
-                let randomX = (Math.random() - 0.5) * 100; // Dịch chuyển ngẫu nhiên trục X
-                let randomY = (Math.random() - 0.5) * 50;  // Dịch chuyển ngẫu nhiên trục Y
-                
-                noBtn.style.position = 'absolute';
-                noBtn.style.transform = `translate(calc(100% + ${randomX}px), ${randomY}px) scale(${noScale})`;
-                
+                let noRightOffset = (Math.random() * 50) + (noClicks * 20);
+                let noTopOffset = (Math.random() * 40 - 20);
+                noBtn.style.transform = `translate(${noRightOffset}px, ${noTopOffset}px)`;
             } else {
-                // Cú chót: Xóa nút "Kó", phóng to toàn màn hình nút "Có"
                 const appContainer = document.getElementById('app');
-                document.body.style.background = '#4caf50'; // Đổi nền báo hiệu
-                
                 appContainer.style.position = 'fixed';
                 appContainer.style.top = '0';
                 appContainer.style.left = '0';
@@ -299,50 +234,26 @@
                 appContainer.style.flexDirection = 'column';
                 appContainer.style.justifyContent = 'center';
                 appContainer.style.alignItems = 'center';
-                appContainer.style.background = 'rgba(255, 255, 255, 0.9)';
-
-                pleadingText.innerText = pleadingTexts[7];
-                pleadingText.style.fontSize = '24px';
-                pleadingText.style.color = 'red';
-
-                yesBtn.style.width = '90vw';
-                yesBtn.style.height = '40vh';
-                yesBtn.style.fontSize = '50px';
-                yesBtn.style.borderRadius = '30px';
                 
+                yesBtn.style.fontSize = '80px';
+                yesBtn.style.padding = '40px 80px';
+                yesBtn.style.margin = '50px 0';
                 noBtn.style.display = 'none';
+                noText.style.fontSize = '25px';
             }
         }
 
         function handleYes() {
             const app = document.getElementById('app');
-            document.body.style.background = '#ffeb3b'; // Đổi nền vui vẻ
             
-            // Logic tin nhắn dựa trên số lần bấm Kó
-            let finalMessage = "";
-            if (noClicks === 0) {
-                finalMessage = "Mình biết bạn đồng ý nhanh mà! Quá tuyệt vời! 🥰";
-            } else if (noClicks > 0 && noClicks < 4) {
-                finalMessage = "Mình biết bạn đồng ý mà, nhanh nha vậy ta! 😘";
-            } else {
-                // noClicks >= 4
-                finalMessage = "Mình biết bạn đồng ý mà, đổi từ nhanh thành lâu vậy... Làm tớ hết hồn! 😏";
-            }
-
+            let message = noClicks < 4 
+                ? "Mình biết bạn đồng ý mà, nhanh nha vậy ta! 🎉❤️" 
+                : "Mình biết bạn đồng ý mà, đổi từ nhanh thành lâu vậy... 😤❤️";
+                
             app.innerHTML = `
-                <img class="cat-img" style="width: 250px; height: 250px;" src="${catImages.happy}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo nhảy múa">
-                <h2 style="font-size: 28px; margin-top: 20px;">Yay! 🎉</h2>
-                <p style="font-size: 20px; color: #e91e63; font-weight: bold; margin-top: 15px; padding: 0 10px;">
-                    ${finalMessage} ❤️
-                </p>
+                <img class="cat-img" src="${catImages.happy}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo nhảy múa">
+                <h2>${message}</h2>
             `;
-            
-            // Trả lại form ban đầu nếu đang ở chế độ toàn màn hình
-            app.style.position = 'relative';
-            app.style.width = '90%';
-            app.style.height = 'auto';
-            app.style.maxWidth = '500px';
-            app.style.borderRadius = '20px';
         }
     </script>
 </body>
