@@ -10,38 +10,40 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             background-color: #fce4ec;
-            overflow: hidden;
-            position: relative;
+            overflow-x: hidden;
+            box-sizing: border-box;
         }
         .container {
             text-align: center;
             background: white;
-            padding: 40px;
+            padding: 30px 20px;
             border-radius: 15px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             max-width: 450px;
             width: 90%;
             transition: all 0.3s ease;
-            max-height: 90vh;
-            overflow-y: auto;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         .cat-img {
-            width: 180px;
-            height: 180px;
+            width: 150px;
+            height: 150px;
             object-fit: contain;
             margin-bottom: 15px;
             transition: all 0.3s ease;
         }
         input[type="text"] {
-            width: 85%;
+            width: 100%;
             padding: 12px;
             margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 8px;
             font-size: 16px;
+            box-sizing: border-box;
         }
         button {
             padding: 10px 20px;
@@ -72,7 +74,7 @@
             color: white;
             font-size: 18px;
             padding: 12px 28px;
-            margin-left: 15px;
+            margin-left: 10px;
             position: relative;
             transition: all 0.3s ease;
         }
@@ -91,6 +93,7 @@
             justify-content: center;
             align-items: center;
             min-height: 80px;
+            flex-wrap: wrap;
         }
         .error-text {
             color: red;
@@ -110,16 +113,16 @@
         }
         .author-text {
             font-size: 14px;
-            color: #777;
-            margin-top: -15px;
-            margin-bottom: 20px;
+            color: #666;
             font-style: italic;
+            margin-bottom: 15px;
         }
         .custom-desc {
             font-size: 16px;
             color: #e91e63;
             margin-top: 15px;
             font-weight: bold;
+            word-break: break-word;
         }
         .advanced-toggle {
             background: none;
@@ -149,12 +152,19 @@
         }
         .footer {
             position: fixed;
-            bottom: 10px;
+            bottom: 5px;
             width: 100%;
             text-align: center;
-            font-size: 12px;
+            font-size: 11px;
             color: #888;
             pointer-events: none;
+            background-color: #fce4ec;
+            padding: 5px 0;
+        }
+        h2 {
+            font-size: 20px;
+            word-break: break-word;
+            margin-top: 0;
         }
     </style>
 </head>
@@ -190,22 +200,27 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const qParam = urlParams.get('q');
-        let titleParam = urlParams.get('title');
-        let authorParam = urlParams.get('author');
-        let descParam = urlParams.get('desc');
+        
+        let titleParam = "", authorParam = "", descParam = "";
 
         if (qParam) {
             try {
-                const decoded = JSON.parse(decodeURIComponent(escape(atob(qParam))));
-                titleParam = decoded.t;
-                authorParam = decoded.a;
-                descParam = decoded.d;
-            } catch (e) {}
+                let decodedData = JSON.parse(atob(qParam));
+                titleParam = decodedData.t || "";
+                authorParam = decodedData.a || "";
+                descParam = decodedData.d || "";
+            } catch (e) {
+                titleParam = "Lỗi đọc dữ liệu!";
+            }
+        } else {
+            titleParam = urlParams.get('title') || "";
+            authorParam = urlParams.get('author') || "";
+            descParam = urlParams.get('desc') || "";
         }
 
         const app = document.getElementById('app');
 
-        if (!titleParam) {
+        if (!qParam && !urlParams.get('title')) {
             app.innerHTML = `
                 <h2>Tạo Lời Mời Của Bạn</h2>
                 <input type="text" id="titleInput" placeholder="Nhập câu hỏi (VD: Đi chơi với tớ nhé?)">
@@ -214,9 +229,9 @@
                 <button type="button" class="advanced-toggle" onclick="toggleAdvanced()">⚙️ Tùy chọn nâng cao</button>
                 <div id="advancedSection" class="advanced-section">
                     <label>Tên người tạo (@thông tin):</label>
-                    <input type="text" id="authorInput" placeholder="VD: Của Crush tặng bạn" style="width: 93%; margin-bottom: 10px;">
+                    <input type="text" id="authorInput" placeholder="VD: Của Crush tặng bạn" style="width: 100%; margin-bottom: 10px; box-sizing: border-box;">
                     <label>Lời nhắn riêng khi nhấn Có:</label>
-                    <input type="text" id="descInput" placeholder="VD: Chuẩn bị 8h tối anh qua đón nhé!" style="width: 93%; margin-bottom: 0;">
+                    <input type="text" id="descInput" placeholder="VD: Chuẩn bị 8h tối anh qua đón nhé!" style="width: 100%; margin-bottom: 0; box-sizing: border-box;">
                 </div>
                 <br>
                 <button id="genBtn" class="btn-primary" onclick="generateLink()">Tạo Đường Link</button>
@@ -224,10 +239,13 @@
             `;
         } 
         else {
+            let decodedTitle = titleParam;
+            let decodedAuthor = authorParam;
+            
             app.innerHTML = `
                 <img id="catImg" class="cat-img" src="${catImages[0]}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo meme">
-                <h2 id="questionTitle">${titleParam}</h2>
-                ${authorParam ? `<div class="author-text">@${authorParam}</div>` : ''}
+                <h2 id="questionTitle">${decodedTitle}</h2>
+                ${decodedAuthor ? `<div class="author-text">@${decodedAuthor}</div>` : ''}
                 <div id="noText"></div>
                 <div class="button-group">
                     <button id="yesBtn" class="btn-yes" onclick="handleYes()">Có</button>
@@ -253,30 +271,20 @@
             }
             errorText.style.display = 'none';
             
-            const currentUrl = window.location.href.split('?')[0];
-            
-            let rawLink = `${currentUrl}?title=${encodeURIComponent(val)}`;
-            if (authorVal) rawLink += `&author=${encodeURIComponent(authorVal)}`;
-            if (descVal) rawLink += `&desc=${encodeURIComponent(descVal)}`;
+            let dataObj = { t: val };
+            if (authorVal) dataObj.a = authorVal;
+            if (descVal) dataObj.d = descVal;
 
-            const data = { t: val };
-            if (authorVal) data.a = authorVal;
-            if (descVal) data.d = descVal;
-            const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-            const shortLink = `${currentUrl}?q=${encodedData}`;
+            let encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(dataObj))));
+            const currentUrl = window.location.href.split('?')[0];
+            const shortInternalLink = `${currentUrl}?q=${encodedData}`;
 
             const resultDiv = document.getElementById('result');
             resultDiv.style.display = 'block';
             resultDiv.innerHTML = `
-                <strong>Link gốc (rõ chữ):</strong><br>
-                <a href="${rawLink}" target="_blank" style="font-size:12px;">${rawLink}</a><br>
-                <button onclick="copyLink('${rawLink}', this)" class="btn-primary" style="font-size: 13px; padding: 6px 12px; margin-top: 5px;">Copy link gốc</button>
-                
-                <div style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 10px;">
-                    <strong>Link nội bộ (ẩn chữ):</strong><br>
-                    <a href="${shortLink}" target="_blank" style="font-size:12px; color: #e91e63;">${shortLink}</a><br>
-                    <button onclick="copyLink('${shortLink}', this)" class="btn-primary" style="font-size: 13px; padding: 6px 12px; background-color: #4caf50; margin-top: 5px;">Copy link ẩn</button>
-                </div>
+                <strong>Link của bạn đây:</strong><br>
+                <a id="rawLink" href="${shortInternalLink}" target="_blank">${shortInternalLink}</a><br><br>
+                <button onclick="copyLink('${shortInternalLink}', this)" class="btn-primary" style="font-size: 13px; padding: 6px 12px; width: 100%;">Sao chép link</button>
             `;
         }
 
@@ -309,13 +317,13 @@
             }
 
             if (noClicks < 7) {
-                let newFontSize = 18 + (noClicks * 8); 
-                let newPadding = 12 + (noClicks * 6);
+                let newFontSize = 18 + (noClicks * 5); 
+                let newPadding = 12 + (noClicks * 3);
                 yesBtn.style.fontSize = `${newFontSize}px`;
-                yesBtn.style.padding = `${newPadding}px ${newPadding * 2}px`;
+                yesBtn.style.padding = `${newPadding}px ${newPadding * 1.5}px`;
                 
-                let noRightOffset = (Math.random() * 50) + (noClicks * 20);
-                let noTopOffset = (Math.random() * 40 - 20);
+                let noRightOffset = (Math.random() * 30) + (noClicks * 15);
+                let noTopOffset = (Math.random() * 30 - 15);
                 noBtn.style.transform = `translate(${noRightOffset}px, ${noTopOffset}px)`;
             } else {
                 const appContainer = document.getElementById('app');
@@ -331,25 +339,26 @@
                 appContainer.style.justifyContent = 'center';
                 appContainer.style.alignItems = 'center';
                 
-                yesBtn.style.fontSize = '80px';
-                yesBtn.style.padding = '40px 80px';
-                yesBtn.style.margin = '50px 0';
+                yesBtn.style.fontSize = '45px';
+                yesBtn.style.padding = '25px 50px';
+                yesBtn.style.margin = '20px 0';
                 noBtn.style.display = 'none';
-                noText.style.fontSize = '25px';
+                noText.style.fontSize = '20px';
             }
         }
 
         function handleYes() {
             const app = document.getElementById('app');
+            let decodedDesc = descParam;
             
             let message = noClicks < 4 
-                ? "Mình biết bạn đồng ý mà, đồng ý nhanh quá vậy ta! 🎉❤️" 
-                : "Mình biết bạn đồng ý mà, có nhấn có thôi mà lâu quá à đổi từ nhanh thành lâu vậy... 😤❤️";
+                ? "Mình biết bạn đồng ý mà, nhanh nha vậy ta! 🎉❤️" 
+                : "Mình biết bạn đồng ý mà, có nhấn không thôi mà lâu quá à, đổi từ nhanh thành lâu vậy... 😤❤️";
                 
             app.innerHTML = `
                 <img class="cat-img" src="${catImages.happy}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo nhảy múa">
                 <h2>${message}</h2>
-                ${descParam ? `<div class="custom-desc">${descParam}</div>` : ''}
+                ${decodedDesc ? `<div class="custom-desc">${decodedDesc}</div>` : ''}
             `;
         }
     </script>
