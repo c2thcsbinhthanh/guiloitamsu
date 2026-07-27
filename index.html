@@ -199,6 +199,14 @@
         ];
 
         const urlParams = new URLSearchParams(window.location.search);
+        
+        const b64Param = urlParams.get('b64');
+        if (b64Param) {
+            try {
+                window.location.replace(atob(b64Param));
+            } catch (e) {}
+        }
+
         const qParam = urlParams.get('q');
         
         let titleParam = "", authorParam = "", descParam = "";
@@ -278,13 +286,18 @@
             let encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(dataObj))));
             const currentUrl = window.location.href.split('?')[0];
             const shortInternalLink = `${currentUrl}?q=${encodedData}`;
+            const b64Link = `${currentUrl}?b64=${btoa(shortInternalLink)}`;
 
             const resultDiv = document.getElementById('result');
             resultDiv.style.display = 'block';
             resultDiv.innerHTML = `
                 <strong>Link của bạn đây:</strong><br>
                 <a id="rawLink" href="${shortInternalLink}" target="_blank">${shortInternalLink}</a><br><br>
-                <button onclick="copyLink('${shortInternalLink}', this)" class="btn-primary" style="font-size: 13px; padding: 6px 12px; width: 100%;">Sao chép link</button>
+                <button onclick="copyLink('${shortInternalLink}', this)" class="btn-primary" style="font-size: 13px; padding: 6px 12px; width: 100%; margin-bottom: 10px;">Sao chép link</button>
+                <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
+                <strong>Link mã hóa Base64:</strong><br>
+                <a href="${b64Link}" target="_blank" style="font-size: 12px; word-break: break-all;">${b64Link}</a><br><br>
+                <button onclick="copyLink('${b64Link}', this)" class="btn-primary" style="font-size: 13px; padding: 6px 12px; width: 100%;">Sao chép link Base64</button>
             `;
         }
 
