@@ -108,7 +108,6 @@
             margin-bottom: 10px;
             display: block;
         }
-        /* CSS cho phần Tùy chọn nâng cao */
         .advanced-toggle {
             font-size: 14px;
             color: #e91e63;
@@ -195,8 +194,8 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const titleParam = urlParams.get('title');
-        const descParam = urlParams.get('desc');     // Lấy mô tả nâng cao
-        const authorParam = urlParams.get('author'); // Lấy tên người tạo
+        const descParam = urlParams.get('desc');
+        const authorParam = urlParams.get('author');
 
         const app = document.getElementById('app');
 
@@ -205,10 +204,8 @@
                 <h2>Tạo Lời Mời Của Bạn</h2>
                 <input type="text" id="titleInput" placeholder="Nhập câu hỏi (VD: Đi chơi với tớ nhé?)">
                 
-                <!-- Nút Tùy chọn nâng cao -->
                 <div class="advanced-toggle" onclick="toggleAdvanced()">⚙️ Tùy chọn nâng cao</div>
                 
-                <!-- Khu vực Tùy chọn nâng cao -->
                 <div class="advanced-options" id="advancedOptions">
                     <label>Tên người tạo / Thông tin người gửi:</label>
                     <input type="text" id="authorInput" placeholder="VD: Khang, hoặc SDT: 098xxx...">
@@ -239,7 +236,6 @@
             `;
         }
 
-        // Hàm bật/tắt Tùy chọn nâng cao
         function toggleAdvanced() {
             const advBox = document.getElementById('advancedOptions');
             if (advBox.style.display === 'none' || advBox.style.display === '') {
@@ -264,7 +260,6 @@
             const currentUrl = window.location.href.split('?')[0];
             let newLink = `${currentUrl}?title=${encodeURIComponent(val)}`;
             
-            // Nếu có nhập thông tin nâng cao thì nối thêm vào link
             if (authorVal) newLink += `&author=${encodeURIComponent(authorVal)}`;
             if (descVal) newLink += `&desc=${encodeURIComponent(descVal)}`;
             
@@ -341,10 +336,9 @@
             const app = document.getElementById('app');
             
             let message = noClicks < 4 
-                ? "Mình biết bạn đồng ý mà, nhanh nha vậy ta! 🎉❤️" 
-                : "Mình biết bạn đồng ý mà, đổi từ nhanh thành lâu vậy... 😤❤️";
+                ? "Mình biết bạn đồng ý mà, đồng ý nhanh vậy ta! 🎉❤️" 
+                : "Mình biết bạn đồng ý mà, mà lâu quá đổi từ nhanh thành lâu vậy... 😤❤️";
                 
-            // Nếu có mô tả tùy chỉnh, hiển thị mô tả đó bên dưới câu có sẵn
             let customDescHtml = descParam ? `<div class="custom-desc">${decodeURIComponent(descParam)}</div>` : '';
                 
             app.innerHTML = `
