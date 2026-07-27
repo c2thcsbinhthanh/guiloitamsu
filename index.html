@@ -14,6 +14,7 @@
             margin: 0;
             background-color: #fce4ec;
             overflow: hidden;
+            position: relative;
         }
         .container {
             text-align: center;
@@ -24,6 +25,7 @@
             max-width: 450px;
             width: 90%;
             transition: all 0.3s ease;
+            z-index: 1;
         }
         .cat-img {
             width: 180px;
@@ -33,7 +35,8 @@
             transition: all 0.3s ease;
         }
         input[type="text"] {
-            width: 85%;
+            width: 100%;
+            box-sizing: border-box;
             padding: 12px;
             margin-bottom: 20px;
             border: 1px solid #ccc;
@@ -105,11 +108,65 @@
             margin-bottom: 10px;
             display: block;
         }
+        /* CSS cho phần Tùy chọn nâng cao */
+        .advanced-toggle {
+            font-size: 14px;
+            color: #e91e63;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+        .advanced-options {
+            display: none;
+            text-align: left;
+            background: #fff0f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px dashed #f48fb1;
+        }
+        .advanced-options label {
+            font-size: 13px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .advanced-options input {
+            margin-bottom: 15px;
+        }
+        .author-text {
+            font-size: 14px;
+            color: #777;
+            margin-top: -15px;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        .custom-desc {
+            color: #e91e63;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 15px;
+            line-height: 1.4;
+        }
+        /* CSS cho Footer */
+        .footer {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            z-index: 0;
+        }
     </style>
 </head>
 <body>
 
     <div class="container" id="app"></div>
+    
+    <div class="footer">© 2026 | © Copyright ATCX. All rights reserved.</div>
 
     <script>
         const fallbackImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><rect width='180' height='180' fill='%23ffb6c1'/><text x='50%' y='50%' font-family='Arial' font-size='16' fill='white' text-anchor='middle' dy='.3em'>(^•ᴥ•^) Meow</text></svg>";
@@ -121,7 +178,7 @@
             3: "https://media.giphy.com/media/xdH0MjQ83lGFVv7gjR/giphy.gif",  
             4: "https://media.giphy.com/media/QtdE1JSEHHEOVqVcht/giphy.gif",  
             5: "https://media.giphy.com/media/WTjnWYENpLxS8JQ5rz/giphy.gif",  
-            6: "https://media.giphy.com/media/2uwZ4xi75JhxZYeyQB/giphy.gif",  // <-- GIF kế cuối của bạn đã nằm ở đây
+            6: "https://media.giphy.com/media/2uwZ4xi75JhxZYeyQB/giphy.gif",  
             7: "https://media.giphy.com/media/fLJ7SLBhTqatGF9hwI/giphy.gif",  
             happy: "https://media.giphy.com/media/qFmdpUKAFZ6rMobzzu/giphy.gif" 
         };
@@ -138,12 +195,28 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const titleParam = urlParams.get('title');
+        const descParam = urlParams.get('desc');     // Lấy mô tả nâng cao
+        const authorParam = urlParams.get('author'); // Lấy tên người tạo
+
         const app = document.getElementById('app');
 
         if (!titleParam) {
             app.innerHTML = `
                 <h2>Tạo Lời Mời Của Bạn</h2>
                 <input type="text" id="titleInput" placeholder="Nhập câu hỏi (VD: Đi chơi với tớ nhé?)">
+                
+                <!-- Nút Tùy chọn nâng cao -->
+                <div class="advanced-toggle" onclick="toggleAdvanced()">⚙️ Tùy chọn nâng cao</div>
+                
+                <!-- Khu vực Tùy chọn nâng cao -->
+                <div class="advanced-options" id="advancedOptions">
+                    <label>Tên người tạo / Thông tin người gửi:</label>
+                    <input type="text" id="authorInput" placeholder="VD: Khang, hoặc SDT: 098xxx...">
+                    
+                    <label>Lời nhắn hiển thị sau khi người kia nhấn "Có":</label>
+                    <input type="text" id="descInput" placeholder="VD: Tối nay 7h mình đón đi ăn nhé!">
+                </div>
+
                 <div id="errorText" class="error-text">Vui lòng nhập nội dung!</div>
                 <button id="genBtn" class="btn-primary" onclick="generateLink()">Tạo Đường Link</button>
                 <div id="result" class="link-box" style="display:none;"></div>
@@ -151,9 +224,13 @@
         } 
         else {
             let decodedTitle = decodeURIComponent(titleParam);
+            // Nếu có thông tin người tạo thì render ra thẻ HTML
+            let authorHtml = authorParam ? `<div class="author-text">@${decodeURIComponent(authorParam)}</div>` : '';
+            
             app.innerHTML = `
                 <img id="catImg" class="cat-img" src="${catImages[0]}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo meme">
                 <h2 id="questionTitle">${decodedTitle}</h2>
+                ${authorHtml}
                 <div id="noText"></div>
                 <div class="button-group">
                     <button id="yesBtn" class="btn-yes" onclick="handleYes()">Có</button>
@@ -162,8 +239,20 @@
             `;
         }
 
+        // Hàm bật/tắt Tùy chọn nâng cao
+        function toggleAdvanced() {
+            const advBox = document.getElementById('advancedOptions');
+            if (advBox.style.display === 'none' || advBox.style.display === '') {
+                advBox.style.display = 'block';
+            } else {
+                advBox.style.display = 'none';
+            }
+        }
+
         function generateLink() {
             const val = document.getElementById('titleInput').value.trim();
+            const authorVal = document.getElementById('authorInput') ? document.getElementById('authorInput').value.trim() : '';
+            const descVal = document.getElementById('descInput') ? document.getElementById('descInput').value.trim() : '';
             const errorText = document.getElementById('errorText');
             
             if (!val) {
@@ -173,7 +262,12 @@
             errorText.style.display = 'none';
             
             const currentUrl = window.location.href.split('?')[0];
-            const newLink = `${currentUrl}?title=${encodeURIComponent(val)}`;
+            let newLink = `${currentUrl}?title=${encodeURIComponent(val)}`;
+            
+            // Nếu có nhập thông tin nâng cao thì nối thêm vào link
+            if (authorVal) newLink += `&author=${encodeURIComponent(authorVal)}`;
+            if (descVal) newLink += `&desc=${encodeURIComponent(descVal)}`;
+            
             const resultDiv = document.getElementById('result');
             
             resultDiv.style.display = 'block';
@@ -250,9 +344,13 @@
                 ? "Mình biết bạn đồng ý mà, nhanh nha vậy ta! 🎉❤️" 
                 : "Mình biết bạn đồng ý mà, đổi từ nhanh thành lâu vậy... 😤❤️";
                 
+            // Nếu có mô tả tùy chỉnh, hiển thị mô tả đó bên dưới câu có sẵn
+            let customDescHtml = descParam ? `<div class="custom-desc">${decodeURIComponent(descParam)}</div>` : '';
+                
             app.innerHTML = `
                 <img class="cat-img" src="${catImages.happy}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo nhảy múa">
                 <h2>${message}</h2>
+                ${customDescHtml}
             `;
         }
     </script>
