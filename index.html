@@ -189,9 +189,20 @@
         ];
 
         const urlParams = new URLSearchParams(window.location.search);
-        const titleParam = urlParams.get('title');
-        const authorParam = urlParams.get('author');
-        const descParam = urlParams.get('desc');
+        const qParam = urlParams.get('q');
+        let titleParam = urlParams.get('title');
+        let authorParam = urlParams.get('author');
+        let descParam = urlParams.get('desc');
+
+        if (qParam) {
+            try {
+                const decoded = JSON.parse(decodeURIComponent(escape(atob(qParam))));
+                titleParam = decoded.t;
+                authorParam = decoded.a;
+                descParam = decoded.d;
+            } catch (e) {}
+        }
+
         const app = document.getElementById('app');
 
         if (!titleParam) {
@@ -213,13 +224,10 @@
             `;
         } 
         else {
-            let decodedTitle = decodeURIComponent(titleParam);
-            let decodedAuthor = authorParam ? decodeURIComponent(authorParam) : '';
-            
             app.innerHTML = `
                 <img id="catImg" class="cat-img" src="${catImages[0]}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo meme">
-                <h2 id="questionTitle">${decodedTitle}</h2>
-                ${decodedAuthor ? `<div class="author-text">@${decodedAuthor}</div>` : ''}
+                <h2 id="questionTitle">${titleParam}</h2>
+                ${authorParam ? `<div class="author-text">@${authorParam}</div>` : ''}
                 <div id="noText"></div>
                 <div class="button-group">
                     <button id="yesBtn" class="btn-yes" onclick="handleYes()">Có</button>
@@ -246,73 +254,30 @@
             errorText.style.display = 'none';
             
             const currentUrl = window.location.href.split('?')[0];
-            let newLink = `${currentUrl}?title=${encodeURIComponent(val)}`;
-            if (authorVal) newLink += `&author=${encodeURIComponent(authorVal)}`;
-            if (descVal) newLink += `&desc=${encodeURIComponent(descVal)}`;
+            
+            let rawLink = `${currentUrl}?title=${encodeURIComponent(val)}`;
+            if (authorVal) rawLink += `&author=${encodeURIComponent(authorVal)}`;
+            if (descVal) rawLink += `&desc=${encodeURIComponent(descVal)}`;
+
+            const data = { t: val };
+            if (authorVal) data.a = authorVal;
+            if (descVal) data.d = descVal;
+            const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+            const shortLink = `${currentUrl}?q=${encodedData}`;
 
             const resultDiv = document.getElementById('result');
             resultDiv.style.display = 'block';
             resultDiv.innerHTML = `
-                <strong>Link gốc của bạn:</strong><br>
-                <a id="rawLink" href="${newLink}" target="_blank">${newLink}</a><br><br>
-                <button onclick="copyLink('${newLink}', this)" class="btn-primary" style="font-size: 13px; padding: 6px 12px;">Sao chép link gốc</button>
-                <button id="shortBtn" onclick="shortenLink('${newLink}')" class="btn-primary" style="font-size: 13px; padding: 6px 12px; background-color: #ff9800; margin-left: 5px;">🔗 Rút gọn link</button>
+                <strong>Link gốc (rõ chữ):</strong><br>
+                <a href="${rawLink}" target="_blank" style="font-size:12px;">${rawLink}</a><br>
+                <button onclick="copyLink('${rawLink}', this)" class="btn-primary" style="font-size: 13px; padding: 6px 12px; margin-top: 5px;">Copy link gốc</button>
                 
-                <div id="shortResult" style="margin-top: 10px; display: none; border-top: 1px solid #ddd; padding-top: 8px;">
-                    <strong>Link rút gọn:</strong><br>
-                    <a id="shortLinkText" href="" target="_blank" style="color: #e91e63; font-weight: bold;"></a><br><br>
-                    <button onclick="copyShortLink(this)" class="btn-primary" style="font-size: 13px; padding: 6px 12px; background-color: #4caf50;">Sao chép link rút gọn</button>
+                <div style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 10px;">
+                    <strong>Link nội bộ (ẩn chữ):</strong><br>
+                    <a href="${shortLink}" target="_blank" style="font-size:12px; color: #e91e63;">${shortLink}</a><br>
+                    <button onclick="copyLink('${shortLink}', this)" class="btn-primary" style="font-size: 13px; padding: 6px 12px; background-color: #4caf50; margin-top: 5px;">Copy link ẩn</button>
                 </div>
             `;
-        }
-
-        // HÀM RÚT GỌN LINK ĐÃ ĐƯỢC FIX LỖI BẢO MẬT CORS
-        function shortenLink(longLink) {
-            const shortBtn = document.getElementById('shortBtn');
-            shortBtn.innerText = 'Đang rút gọn...';
-            shortBtn.disabled = true;
-
-            // Sử dụng is.gd API vì hỗ trợ CORS tốt cho GitHub Pages
-            fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longLink)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.shorturl) {
-                        showShortLink(data.shorturl);
-                        shortBtn.innerText = 'Đã rút gọn ✔️';
-                    } else {
-                        throw new Error('Lỗi từ is.gd');
-                    }
-                })
-                .catch(err => {
-                    console.warn("is.gd bị lỗi, thử dùng phương án dự phòng AllOrigins + TinyURL...", err);
-                    
-                    // Phương án dự phòng: Dùng proxy để vượt rào CORS cho TinyURL
-                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(longLink))}`;
-                    
-                    fetch(proxyUrl)
-                        .then(res => res.text())
-                        .then(shortUrl => {
-                            if (shortUrl && shortUrl.startsWith('http')) {
-                                showShortLink(shortUrl);
-                                shortBtn.innerText = 'Đã rút gọn ✔️';
-                            } else {
-                                throw new Error('Proxy cũng lỗi');
-                            }
-                        })
-                        .catch(err2 => {
-                            console.error(err2);
-                            alert('Hệ thống mạng đang chặn tạo link rút gọn! Vui lòng dùng nút "Sao chép link gốc" nhé.');
-                            shortBtn.innerText = '🔗 Rút gọn link';
-                            shortBtn.disabled = false;
-                        });
-                });
-        }
-
-        function showShortLink(shortUrl) {
-            document.getElementById('shortResult').style.display = 'block';
-            const linkEl = document.getElementById('shortLinkText');
-            linkEl.href = shortUrl;
-            linkEl.innerText = shortUrl;
         }
 
         function copyLink(link, btn) {
@@ -323,17 +288,6 @@
                 setTimeout(() => {
                     btn.innerText = oldText;
                     btn.classList.remove('copied');
-                }, 2000);
-            });
-        }
-
-        function copyShortLink(btn) {
-            const shortUrl = document.getElementById('shortLinkText').innerText;
-            navigator.clipboard.writeText(shortUrl).then(() => {
-                let oldText = btn.innerText;
-                btn.innerText = 'Đã sao chép! ✔️';
-                setTimeout(() => {
-                    btn.innerText = oldText;
                 }, 2000);
             });
         }
@@ -387,17 +341,15 @@
 
         function handleYes() {
             const app = document.getElementById('app');
-            const descParam = urlParams.get('desc');
-            let decodedDesc = descParam ? decodeURIComponent(descParam) : '';
             
             let message = noClicks < 4 
-                ? "Mình biết bạn đồng ý mà, đồng ý nhanh vậy ta! 🎉❤️" 
-                : "Mình biết bạn đồng ý mà, đồng ý lâu quá à đổi từ nhanh thành lâu vậy... 😤❤️";
+                ? "Mình biết bạn đồng ý mà, đồng ý nhanh quá vậy ta! 🎉❤️" 
+                : "Mình biết bạn đồng ý mà, có nhấn có thôi mà lâu quá à đổi từ nhanh thành lâu vậy... 😤❤️";
                 
             app.innerHTML = `
                 <img class="cat-img" src="${catImages.happy}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo nhảy múa">
                 <h2>${message}</h2>
-                ${decodedDesc ? `<div class="custom-desc">${decodedDesc}</div>` : ''}
+                ${descParam ? `<div class="custom-desc">${descParam}</div>` : ''}
             `;
         }
     </script>
