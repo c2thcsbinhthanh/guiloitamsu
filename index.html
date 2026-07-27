@@ -25,7 +25,8 @@
             max-width: 450px;
             width: 90%;
             transition: all 0.3s ease;
-            z-index: 1;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .cat-img {
             width: 180px;
@@ -35,10 +36,9 @@
             transition: all 0.3s ease;
         }
         input[type="text"] {
-            width: 100%;
-            box-sizing: border-box;
+            width: 85%;
             padding: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 8px;
             font-size: 16px;
@@ -108,63 +108,59 @@
             margin-bottom: 10px;
             display: block;
         }
-        .advanced-toggle {
+        .author-tag {
             font-size: 14px;
+            color: #666;
+            font-style: italic;
+            margin-top: -5px;
+            margin-bottom: 15px;
+        }
+        .custom-desc {
+            font-size: 16px;
             color: #e91e63;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .advanced-toggle {
+            background: none;
+            color: #e91e63;
+            border: none;
+            font-size: 14px;
             cursor: pointer;
             text-decoration: underline;
             margin-bottom: 15px;
-            display: inline-block;
+            padding: 0;
         }
-        .advanced-options {
+        .advanced-section {
             display: none;
             text-align: left;
-            background: #fff0f5;
-            padding: 15px;
+            background: #fafafa;
+            padding: 12px;
             border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px dashed #f48fb1;
-        }
-        .advanced-options label {
-            font-size: 13px;
-            font-weight: bold;
-            display: block;
-            margin-bottom: 5px;
-            color: #333;
-        }
-        .advanced-options input {
+            border: 1px dashed #ddd;
             margin-bottom: 15px;
         }
-        .author-text {
-            font-size: 14px;
-            color: #777;
-            margin-top: -15px;
-            margin-bottom: 20px;
-            font-style: italic;
-        }
-        .custom-desc {
-            color: #e91e63;
-            font-size: 18px;
+        .advanced-section label {
+            font-size: 13px;
             font-weight: bold;
-            margin-top: 15px;
-            line-height: 1.4;
+            color: #555;
+            display: block;
+            margin-bottom: 5px;
         }
-        /* CSS cho Footer */
         .footer {
-            position: absolute;
+            position: fixed;
             bottom: 10px;
             width: 100%;
             text-align: center;
             font-size: 12px;
-            color: #999;
-            z-index: 0;
+            color: #888;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
     <div class="container" id="app"></div>
-    
     <div class="footer">© 2026 | © Copyright ATCX. All rights reserved.</div>
 
     <script>
@@ -194,40 +190,36 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const titleParam = urlParams.get('title');
-        const descParam = urlParams.get('desc');
         const authorParam = urlParams.get('author');
-
+        const descParam = urlParams.get('desc');
         const app = document.getElementById('app');
 
         if (!titleParam) {
             app.innerHTML = `
                 <h2>Tạo Lời Mời Của Bạn</h2>
                 <input type="text" id="titleInput" placeholder="Nhập câu hỏi (VD: Đi chơi với tớ nhé?)">
-                
-                <div class="advanced-toggle" onclick="toggleAdvanced()">⚙️ Tùy chọn nâng cao</div>
-                
-                <div class="advanced-options" id="advancedOptions">
-                    <label>Tên người tạo / Thông tin người gửi:</label>
-                    <input type="text" id="authorInput" placeholder="VD: Khang, hoặc SDT: 098xxx...">
-                    
-                    <label>Lời nhắn hiển thị sau khi người kia nhấn "Có":</label>
-                    <input type="text" id="descInput" placeholder="VD: Tối nay 7h mình đón đi ăn nhé!">
-                </div>
-
                 <div id="errorText" class="error-text">Vui lòng nhập nội dung!</div>
+                
+                <button type="button" class="advanced-toggle" onclick="toggleAdvanced()">⚙️ Tùy chọn nâng cao</button>
+                <div id="advancedSection" class="advanced-section">
+                    <label>Tên người tạo (@thông tin):</label>
+                    <input type="text" id="authorInput" placeholder="VD: Của Crush tặng bạn" style="width: 93%; margin-bottom: 10px;">
+                    <label>Lời nhắn riêng khi nhấn Có:</label>
+                    <input type="text" id="descInput" placeholder="VD: Chuẩn bị 8h tối anh qua đón nhé!" style="width: 93%; margin-bottom: 0;">
+                </div>
+                <br>
                 <button id="genBtn" class="btn-primary" onclick="generateLink()">Tạo Đường Link</button>
                 <div id="result" class="link-box" style="display:none;"></div>
             `;
         } 
         else {
             let decodedTitle = decodeURIComponent(titleParam);
-            // Nếu có thông tin người tạo thì render ra thẻ HTML
-            let authorHtml = authorParam ? `<div class="author-text">@${decodeURIComponent(authorParam)}</div>` : '';
+            let decodedAuthor = authorParam ? decodeURIComponent(authorParam) : '';
             
             app.innerHTML = `
                 <img id="catImg" class="cat-img" src="${catImages[0]}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo meme">
                 <h2 id="questionTitle">${decodedTitle}</h2>
-                ${authorHtml}
+                ${decodedAuthor ? `<div class="author-text">@${decodedAuthor}</div>` : ''}
                 <div id="noText"></div>
                 <div class="button-group">
                     <button id="yesBtn" class="btn-yes" onclick="handleYes()">Có</button>
@@ -237,18 +229,14 @@
         }
 
         function toggleAdvanced() {
-            const advBox = document.getElementById('advancedOptions');
-            if (advBox.style.display === 'none' || advBox.style.display === '') {
-                advBox.style.display = 'block';
-            } else {
-                advBox.style.display = 'none';
-            }
+            const section = document.getElementById('advancedSection');
+            section.style.display = section.style.display === 'block' ? 'none' : 'block';
         }
 
         function generateLink() {
             const val = document.getElementById('titleInput').value.trim();
-            const authorVal = document.getElementById('authorInput') ? document.getElementById('authorInput').value.trim() : '';
-            const descVal = document.getElementById('descInput') ? document.getElementById('descInput').value.trim() : '';
+            const authorVal = document.getElementById('authorInput').value.trim();
+            const descVal = document.getElementById('descInput').value.trim();
             const errorText = document.getElementById('errorText');
             
             if (!val) {
@@ -259,28 +247,73 @@
             
             const currentUrl = window.location.href.split('?')[0];
             let newLink = `${currentUrl}?title=${encodeURIComponent(val)}`;
-            
             if (authorVal) newLink += `&author=${encodeURIComponent(authorVal)}`;
             if (descVal) newLink += `&desc=${encodeURIComponent(descVal)}`;
-            
+
             const resultDiv = document.getElementById('result');
-            
             resultDiv.style.display = 'block';
             resultDiv.innerHTML = `
-                <strong>Link của bạn đây:</strong><br>
-                <a href="${newLink}" target="_blank">${newLink}</a><br><br>
-                <button onclick="copyLink('${newLink}')" class="btn-primary" style="font-size: 14px; padding: 8px 15px;">Sao chép link</button>
+                <strong>Link gốc của bạn:</strong><br>
+                <a id="rawLink" href="${newLink}" target="_blank">${newLink}</a><br><br>
+                <button onclick="copyLink('${newLink}', this)" class="btn-primary" style="font-size: 13px; padding: 6px 12px;">Sao chép link gốc</button>
+                <button id="shortBtn" onclick="shortenLink('${newLink}')" class="btn-primary" style="font-size: 13px; padding: 6px 12px; background-color: #ff9800; margin-left: 5px;">🔗 Rút gọn link</button>
+                
+                <div id="shortResult" style="margin-top: 10px; display: none; border-top: 1px solid #ddd; padding-top: 8px;">
+                    <strong>Link rút gọn:</strong><br>
+                    <a id="shortLinkText" href="" target="_blank" style="color: #e91e63; font-weight: bold;"></a><br><br>
+                    <button onclick="copyShortLink(this)" class="btn-primary" style="font-size: 13px; padding: 6px 12px; background-color: #4caf50;">Sao chép link rút gọn</button>
+                </div>
             `;
         }
 
-        function copyLink(link) {
+        function shortenLink(longLink) {
+            const shortBtn = document.getElementById('shortBtn');
+            shortBtn.innerText = 'Đang rút gọn...';
+            shortBtn.disabled = true;
+
+            fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(longLink)}`)
+                .then(response => response.text())
+                .then(shortUrl => {
+                    if (shortUrl && shortUrl.startsWith('http')) {
+                        document.getElementById('shortResult').style.display = 'block';
+                        document.getElementById('shortLinkText.href').href = shortUrl; // Fix assigned link
+                        const linkEl = document.getElementById('shortLinkText');
+                        linkEl.href = shortUrl;
+                        linkEl.innerText = shortUrl;
+                        shortBtn.innerText = 'Đã rút gọn ✔️';
+                    } else {
+                        alert('Không thể rút gọn link lúc này!');
+                        shortBtn.innerText = '🔗 Rút gọn link';
+                        shortBtn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Lỗi kết nối khi rút gọn link!');
+                    shortBtn.innerText = '🔗 Rút gọn link';
+                    shortBtn.disabled = false;
+                });
+        }
+
+        function copyLink(link, btn) {
             navigator.clipboard.writeText(link).then(() => {
-                const btn = document.querySelector('.link-box button');
+                let oldText = btn.innerText;
                 btn.innerText = 'Đã sao chép! ✔️';
                 btn.classList.add('copied');
                 setTimeout(() => {
-                    btn.innerText = 'Sao chép link';
+                    btn.innerText = oldText;
                     btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function copyShortLink(btn) {
+            const shortUrl = document.getElementById('shortLinkText').innerText;
+            navigator.clipboard.writeText(shortUrl).then(() => {
+                let oldText = btn.innerText;
+                btn.innerText = 'Đã sao chép! ✔️';
+                setTimeout(() => {
+                    btn.innerText = oldText;
                 }, 2000);
             });
         }
@@ -334,17 +367,17 @@
 
         function handleYes() {
             const app = document.getElementById('app');
+            const descParam = urlParams.get('desc');
+            let decodedDesc = descParam ? decodeURIComponent(descParam) : '';
             
             let message = noClicks < 4 
                 ? "Mình biết bạn đồng ý mà, đồng ý nhanh vậy ta! 🎉❤️" 
-                : "Mình biết bạn đồng ý mà, mà lâu quá đổi từ nhanh thành lâu vậy... 😤❤️";
-                
-            let customDescHtml = descParam ? `<div class="custom-desc">${decodeURIComponent(descParam)}</div>` : '';
+                : "Mình biết bạn đồng ý mà, đồng ý lâu quá à đổi từ nhanh thành lâu vậy... 😤❤️";
                 
             app.innerHTML = `
                 <img class="cat-img" src="${catImages.happy}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo nhảy múa">
                 <h2>${message}</h2>
-                ${customDescHtml}
+                ${decodedDesc ? `<div class="custom-desc">${decodedDesc}</div>` : ''}
             `;
         }
     </script>
