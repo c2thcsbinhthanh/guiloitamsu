@@ -1,0 +1,200 @@
+const fallbackImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><rect width='180' height='180' fill='%23ffb6c1'/><text x='50%' y='50%' font-family='Arial' font-size='16' fill='white' text-anchor='middle' dy='.3em'>(^•ᴥ•^) Meow</text></svg>";
+
+        const catImages = {
+            0: "https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif",       
+            1: "https://media.giphy.com/media/SqmkZ5IdwzTP2/giphy.gif",       
+            2: "https://media.giphy.com/media/OPU6wzx8JrHna/giphy.gif",       
+            3: "https://media.giphy.com/media/xdH0MjQ83lGFVv7gjR/giphy.gif",  
+            4: "https://media.giphy.com/media/QtdE1JSEHHEOVqVcht/giphy.gif",  
+            5: "https://media.giphy.com/media/WTjnWYENpLxS8JQ5rz/giphy.gif",  
+            6: "https://media.giphy.com/media/2uwZ4xi75JhxZYeyQB/giphy.gif",  
+            7: "https://media.giphy.com/media/fLJ7SLBhTqatGF9hwI/giphy.gif",  
+            happy: "https://media.giphy.com/media/qFmdpUKAFZ6rMobzzu/giphy.gif" 
+        };
+
+        const noTexts = [
+            "Sao chưa đồng ý nữa?", 
+            "Đồng ý đi mà! 🥺", 
+            "Năn nỉ luôn á, nhấn Có đi! 😭", 
+            "Kó cái gì mà Kó! Nhấn Có kìa!", 
+            "Cho cơ hội nữa đó, nhấn Có đi!", 
+            "Không thoát được đâu! 😈", 
+            "Hết cách rồi, chỉ có 1 nút thôi! 😂" 
+        ];
+
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        const b64Param = urlParams.get('b64');
+        if (b64Param) {
+            try {
+                window.location.replace(atob(b64Param));
+            } catch (e) {}
+        }
+
+        const qParam = urlParams.get('q');
+        
+        let titleParam = "", authorParam = "", descParam = "";
+
+        if (qParam) {
+            try {
+                let decodedData = JSON.parse(decodeURIComponent(escape(atob(qParam))));
+                titleParam = decodedData.t || "";
+                authorParam = decodedData.a || "";
+                descParam = decodedData.d || "";
+            } catch (e) {
+                titleParam = "Lỗi đọc dữ liệu!";
+            }
+        } else {
+            titleParam = urlParams.get('title') || "";
+            authorParam = urlParams.get('author') || "";
+            descParam = urlParams.get('desc') || "";
+        }
+
+        const app = document.getElementById('app');
+
+        if (!qParam && !urlParams.get('title')) {
+            app.innerHTML = `
+                <h2>Tạo Lời Mời Của Bạn</h2>
+                <input type="text" id="titleInput" placeholder="Nhập câu hỏi (VD: Đi chơi với tớ nhé?)">
+                <div id="errorText" class="error-text">Vui lòng nhập nội dung!</div>
+                
+                <button type="button" class="advanced-toggle" onclick="toggleAdvanced()">⚙️ Tùy chọn nâng cao</button>
+                <div id="advancedSection" class="advanced-section">
+                    <label>Tên người tạo (@thông tin):</label>
+                    <input type="text" id="authorInput" placeholder="VD: Của Crush tặng bạn" style="width: 100%; margin-bottom: 10px; box-sizing: border-box;">
+                    <label>Lời nhắn riêng khi nhấn Có:</label>
+                    <input type="text" id="descInput" placeholder="VD: Chuẩn bị 8h tối anh qua đón nhé!" style="width: 100%; margin-bottom: 0; box-sizing: border-box;">
+                </div>
+                <br>
+                <button id="genBtn" class="btn-primary" onclick="generateLink()">Tạo Đường Link</button>
+                <div id="result" class="link-box" style="display:none;"></div>
+            `;
+        } 
+        else {
+            let decodedTitle = titleParam;
+            let decodedAuthor = authorParam;
+            
+            app.innerHTML = `
+                <img id="catImg" class="cat-img" src="${catImages[0]}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo meme">
+                <h2 id="questionTitle">${decodedTitle}</h2>
+                ${decodedAuthor ? `<div class="author-text">@${decodedAuthor}</div>` : ''}
+                <div id="noText"></div>
+                <div class="button-group">
+                    <button id="yesBtn" class="btn-yes" onclick="handleYes()">Có</button>
+                    <button id="noBtn" class="btn-no" onclick="handleNo()">Kó</button>
+                </div>
+            `;
+        }
+
+        function toggleAdvanced() {
+            const section = document.getElementById('advancedSection');
+            section.style.display = section.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function generateLink() {
+            const val = document.getElementById('titleInput').value.trim();
+            const authorVal = document.getElementById('authorInput').value.trim();
+            const descVal = document.getElementById('descInput').value.trim();
+            const errorText = document.getElementById('errorText');
+            
+            if (!val) {
+                errorText.style.display = 'block';
+                return;
+            }
+            errorText.style.display = 'none';
+            
+            let dataObj = { t: val };
+            if (authorVal) dataObj.a = authorVal;
+            if (descVal) dataObj.d = descVal;
+
+            let encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(dataObj))));
+            const currentUrl = window.location.href.split('?')[0];
+            const shortInternalLink = `${currentUrl}?q=${encodedData}`;
+            const b64Link = `${currentUrl}?b64=${btoa(shortInternalLink)}`;
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <strong>Link của bạn đây:</strong><br>
+                <a id="rawLink" href="${shortInternalLink}" target="_blank">${shortInternalLink}</a><br><br>
+                <button onclick="copyLink('${shortInternalLink}', this)" class="btn-primary" style="font-size: 13px; padding: 6px 12px; width: 100%; margin-bottom: 10px;">Sao chép link</button>
+                <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
+                <strong>Link mã hóa Base64:</strong><br>
+                <a href="${b64Link}" target="_blank" style="font-size: 12px; word-break: break-all;">${b64Link}</a><br><br>
+                <button onclick="copyLink('${b64Link}', this)" class="btn-primary" style="font-size: 13px; padding: 6px 12px; width: 100%;">Sao chép link Base64</button>
+            `;
+        }
+
+        function copyLink(link, btn) {
+            navigator.clipboard.writeText(link).then(() => {
+                let oldText = btn.innerText;
+                btn.innerText = 'Đã sao chép! ✔️';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerText = oldText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        let noClicks = 0;
+        function handleNo() {
+            noClicks++;
+            const yesBtn = document.getElementById('yesBtn');
+            const noBtn = document.getElementById('noBtn');
+            const catImg = document.getElementById('catImg');
+            const noText = document.getElementById('noText');
+
+            if (catImages[noClicks]) {
+                catImg.src = catImages[noClicks];
+            }
+
+            if (noClicks <= 7) {
+                noText.innerText = noTexts[noClicks - 1];
+            }
+
+            if (noClicks < 7) {
+                let newFontSize = 18 + (noClicks * 5); 
+                let newPadding = 12 + (noClicks * 3);
+                yesBtn.style.fontSize = `${newFontSize}px`;
+                yesBtn.style.padding = `${newPadding}px ${newPadding * 1.5}px`;
+                
+                let noRightOffset = (Math.random() * 30) + (noClicks * 15);
+                let noTopOffset = (Math.random() * 30 - 15);
+                noBtn.style.transform = `translate(${noRightOffset}px, ${noTopOffset}px)`;
+            } else {
+                const appContainer = document.getElementById('app');
+                appContainer.style.position = 'fixed';
+                appContainer.style.top = '0';
+                appContainer.style.left = '0';
+                appContainer.style.width = '100vw';
+                appContainer.style.height = '100vh';
+                appContainer.style.maxWidth = 'none';
+                appContainer.style.borderRadius = '0';
+                appContainer.style.display = 'flex';
+                appContainer.style.flexDirection = 'column';
+                appContainer.style.justifyContent = 'center';
+                appContainer.style.alignItems = 'center';
+                
+                yesBtn.style.fontSize = '45px';
+                yesBtn.style.padding = '25px 50px';
+                yesBtn.style.margin = '20px 0';
+                noBtn.style.display = 'none';
+                noText.style.fontSize = '20px';
+            }
+        }
+
+        function handleYes() {
+            const app = document.getElementById('app');
+            let decodedDesc = descParam;
+            
+            let message = noClicks < 4 
+                ? "Mình biết bạn đồng ý mà, nhấn đồng ý nhanh quá vậy ta! 🎉❤️" 
+                : "Mình biết bạn đồng ý mà, nhấn có thôi mà lâu quá à, đổi từ nhanh thành lâu vậy... 😤❤️";
+                
+            app.innerHTML = `
+                <img class="cat-img" src="${catImages.happy}" onerror="this.src='${fallbackImg}'" referrerpolicy="no-referrer" alt="Mèo nhảy múa">
+                <h2>${message}</h2>
+                ${decodedDesc ? `<div class="custom-desc">${decodedDesc}</div>` : ''}
+            `;
+        }
